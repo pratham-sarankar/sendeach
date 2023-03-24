@@ -1,0 +1,31 @@
+name: ja
+version: 1.0.0+1
+publish_to: none
+description: A new Flutter project.
+environment: 
+  sdk: '>=2.19.0 <3.0.0'
+
+dependencies: 
+  cupertino_icons: ^1.0.2
+  firebase_core: ^2.7.1
+  permission_handler: ^10.2.0
+  google_fonts: ^4.0.3
+  fluttertoast: ^8.2.1
+  device_info_plus: any
+  get_storage: ^2.1.1
+  firebase_messaging: ^14.3.0
+  get: 4.6.5
+  flutter: 
+    sdk: flutter
+  sms_sender: 
+    path: /Users/prathamsarankar/AndroidStudioProjects/sms_sender
+
+dev_dependencies: 
+  flutter_lints: ^2.0.0
+  flutter_test: 
+    sdk: flutter
+
+flutter:
+  assets:
+    - assets/
+  uses-material-design: true

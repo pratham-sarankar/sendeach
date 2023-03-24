@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>CLIENT_ID</key>
+	<string>20857764043-2rr36rst7oolhi8f9gufjsqcmbfm5gmq.apps.googleusercontent.com</string>
+	<key>REVERSED_CLIENT_ID</key>
+	<string>com.googleusercontent.apps.20857764043-2rr36rst7oolhi8f9gufjsqcmbfm5gmq</string>
+	<key>API_KEY</key>
+	<string>AIzaSyD2teKj1lqwQ65D_ox5Wg4A1p4_yJ0ADM0</string>
+	<key>GCM_SENDER_ID</key>
+	<string>20857764043</string>
+	<key>PLIST_VERSION</key>
+	<string>1</string>
+	<key>BUNDLE_ID</key>
+	<string>com.sendeach.ja</string>
+	<key>PROJECT_ID</key>
+	<string>sendeach-28513</string>
+	<key>STORAGE_BUCKET</key>
+	<string>sendeach-28513.appspot.com</string>
+	<key>IS_ADS_ENABLED</key>
+	<false></false>
+	<key>IS_ANALYTICS_ENABLED</key>
+	<false></false>
+	<key>IS_APPINVITE_ENABLED</key>
+	<true></true>
+	<key>IS_GCM_ENABLED</key>
+	<true></true>
+	<key>IS_SIGNIN_ENABLED</key>
+	<true></true>
+	<key>GOOGLE_APP_ID</key>
+	<string>1:20857764043:ios:5942ec2197ae66f891c34e</string>
+</dict>
+</plist>
