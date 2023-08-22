@@ -34,6 +34,16 @@ class OtpField extends StatelessWidget {
               index: 3,
               controller: controller,
             ),
+            const SizedBox(width: 15),
+            OtpBox(
+              index: 4,
+              controller: controller,
+            ),
+            const SizedBox(width: 15),
+            OtpBox(
+              index: 5,
+              controller: controller,
+            ),
           ],
         );
       },
@@ -67,8 +77,8 @@ class OtpBox extends StatelessWidget {
         ),
         color: Get.theme.colorScheme.secondary,
         child: Container(
-          height: 55,
-          width: 55,
+          height: 40,
+          width: 40,
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(5),
           ),
@@ -78,12 +88,12 @@ class OtpBox extends StatelessWidget {
               controller: controller.controllers[index],
               focusNode: controller.focusNodes[index],
               style: const TextStyle(
-                fontSize: 22,
+                fontSize: 15,
               ),
               onChanged: (value) {
                 if (value.isEmpty && index != 0) {
                   controller.focusNodes[index - 1].requestFocus();
-                } else if (value.isNotEmpty && index != 3) {
+                } else if (value.isNotEmpty && index != 6) {
                   controller.focusNodes[index + 1].requestFocus();
                 }
               },
@@ -106,6 +116,12 @@ class OtpFieldController extends GetxController with StateMixin<String> {
 
   OtpFieldController();
 
+  set otp(String value) {
+    for(int i=0; i<value.length; i++){
+      controllers[i].text= value[i];
+    }
+  }
+
   String get otp {
     return controllers.fold(
         "", (previousValue, element) => previousValue + element.text);
@@ -113,8 +129,8 @@ class OtpFieldController extends GetxController with StateMixin<String> {
 
   @override
   void onInit() {
-    controllers = List.generate(4, (index) => TextEditingController());
-    focusNodes = List.generate(4, (index) => FocusNode());
+    controllers = List.generate(6, (index) => TextEditingController());
+    focusNodes = List.generate(6, (index) => FocusNode());
     super.onInit();
   }
 }

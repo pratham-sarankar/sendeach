@@ -1,15 +1,10 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:ja/app/data/repositories/device_repository.dart';
-import 'package:ja/app/data/services/auth_service.dart';
-import 'package:ja/app/data/services/device_info_service.dart';
-import 'package:ja/app/data/services/pref_service.dart';
-import 'package:ja/app/data/services/sms_service.dart';
-import 'package:ja/app/routes/app_pages.dart';
-import 'package:ja/app/widgets/confirmation_dialog.dart';
-import 'package:ja/app/widgets/set_default_toast.dart';
-import 'package:ja/app/widgets/status_button.dart';
+import 'package:google_fonts/google_fonts.dart';
+import 'package:ja/app/modules/home/tabs/contacts_tab/views/contacts_tab_view.dart';
+import 'package:ja/app/modules/home/tabs/home_tab/views/home_tab_view.dart';
+import 'package:ja/app/modules/home/tabs/profile_tab/views/profile_tab_view.dart';
 
 import '../controllers/home_controller.dart';
 
@@ -18,126 +13,44 @@ class HomeView extends GetView<HomeController> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-
-      appBar: AppBar(
-        title: const Text("SMS Gateway"),
-        actions: [
-          PopupMenuButton(
-            onSelected: (value) async {
-              switch (value) {
-                case "logout":
-                  var result = await Get.dialog(const ConfirmationDialog());
-                  if (result) {
-                    await Get.find<AuthService>().logout();
-                    Get.offAllNamed(Routes.LOGIN);
-                  }
-                  break;
-                case "test":
-                  Get.toNamed(Routes.SMS);
-              }
-            },
-            padding: EdgeInsets.zero,
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(10),
-            ),
-            position: PopupMenuPosition.under,
-            itemBuilder: (context) {
-              return <PopupMenuEntry>[
-                PopupMenuItem(
-                  value: "test",
-                  child: Row(
-                    crossAxisAlignment: CrossAxisAlignment.end,
-                    children: const [
-                      Icon(CupertinoIcons.envelope, size: 20),
-                      SizedBox(width: 10),
-                      Text("Test")
-                    ],
-                  ),
-                ),
-                const PopupMenuDivider(),
-                PopupMenuItem(
-                  value: "logout",
-                  child: Row(
-                    crossAxisAlignment: CrossAxisAlignment.end,
-                    children: const [
-                      Icon(Icons.exit_to_app, size: 20),
-                      SizedBox(width: 10),
-                      Text("Logout")
-                    ],
-                  ),
-                ),
-              ];
-            },
-          )
-        ],
-      ),
-      body: Container(
-        width: Get.width,
-        padding: const EdgeInsets.symmetric(horizontal: 18),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.start,
-          crossAxisAlignment: CrossAxisAlignment.center,
-          children: [
-            const SizedBox(height: 20),
-            TextFormField(
-              decoration: const InputDecoration(
-                labelText: "Your Device ID",
+    return Obx(
+      () {
+        return Scaffold(
+          bottomNavigationBar: BottomNavigationBar(
+            items: const [
+              BottomNavigationBarItem(
+                icon: Icon(CupertinoIcons.home),
+                label: "Home",
               ),
-              initialValue: Get.find<DeviceInfoService>().deviceId,
-            ),
-            const Divider(
-              height: 30,
-            ),
-            if (Get.find<SMSService>().isDefaultSmsApp)
-              Row(
-                children: [
-                  Expanded(
-                    child: TextFormField(
-                      enabled: false,
-                      initialValue: "Auto Delete",
-                      decoration: const InputDecoration(
-                        labelText: "Settings",
-                      ),
-                    ),
-                  ),
-                  Obx(
-                    () {
-                      return CupertinoSwitch(
-                        value: Get.find<PrefService>().deleteAfterSent.value,
-                        onChanged: (value) {
-                          Get.find<PrefService>()
-                              .saveBool(Preference.deleteAfterSent, value);
-                        },
-                      );
-                    },
-                  )
-                ],
+              BottomNavigationBarItem(
+                icon: Icon(Icons.contacts),
+                label: "Contacts",
               ),
-            Expanded(
-              flex: 1,
-              child: Container(),
-            ),
-            Obx(
-              () => StatusButton(
-                isConnected: Get.find<DeviceRepository>().isConnected.value,
-                onPressed: () {
-                  Get.find<DeviceRepository>().toggleConnection();
-                },
-                subtitle: controller.getConnectionStatus(),
-                hasError: Get.find<DeviceRepository>().hasError.value,
+              BottomNavigationBarItem(
+                icon: Icon(CupertinoIcons.person_alt_circle_fill),
+                label: "Profile",
               ),
-            ),
-            Expanded(
-              flex: 2,
-              child: Container(),
-            ),
-            if (!Get.find<SMSService>().isDefaultSmsApp)
-              const SetDefaultToast(),
-            const SizedBox(height: 15),
-          ],
-        ),
-      ),
+            ],
+            onTap: controller.changeIndex,
+            currentIndex: controller.index.value,
+            elevation: 20,
+            selectedLabelStyle: GoogleFonts.poppins(),
+            showSelectedLabels: true,
+            showUnselectedLabels: false,
+            selectedItemColor: Colors.black.withGreen(70),
+            unselectedItemColor: Colors.grey.shade700,
+            unselectedLabelStyle: GoogleFonts.poppins(),
+          ),
+          body: IndexedStack(
+            index: controller.index.value,
+            children: const [
+              HomeTabView(),
+              ContactsTabView(),
+              ProfileTabView(),
+            ],
+          ),
+        );
+      },
     );
   }
 }

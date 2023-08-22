@@ -1,5 +1,6 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_otp_text_field/flutter_otp_text_field.dart';
 
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -28,8 +29,10 @@ class OtpView extends GetView<OtpController> {
             ),
           ),
           const Spacer(),
-          OtpField(
-            otpFieldController: Get.find<OtpFieldController>(),
+          Expanded(
+            child: OtpField(
+              otpFieldController: Get.find<OtpFieldController>(),
+            ),
           ),
           const Spacer(),
           RichText(

@@ -1,3 +1,5 @@
 flutter clean
 flutter pub get
-flutter run --release --dart-define=host=https://demo.sendeach.com/api/app
+flutter run --release --dart-define=host=https://sendeach.com/api
+flutter install build/app/outputs/flutter-apk/app-release.apk
+open /build/app/outputs/flutter-apk/

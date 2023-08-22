@@ -50,6 +50,7 @@ void main()async {
             systemNavigationBarContrastEnforced: true,
           ),
         ),
+
         inputDecorationTheme: InputDecorationTheme(
           border: InputBorder.none,
           labelStyle: GoogleFonts.poppins(

@@ -50,6 +50,7 @@ class DeviceProvider extends GetConnect {
     var body = response.body;
     isConnecting.value = false;
     isDisconnecting.value = false;
+    print(body);
     if (body['status'] == true) {
       isConnected.value = body['data']['exist_fcm_token'] ?? false;
     } else {
