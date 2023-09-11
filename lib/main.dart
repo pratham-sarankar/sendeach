@@ -18,6 +18,7 @@ void main()async {
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
 
+  //Put Repositories
   await Get.putAsync(() => AuthService().init());
   await Get.putAsync(() => PrefService().init());
   await Get.putAsync(() => FCMService().init());
