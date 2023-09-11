@@ -36,7 +36,7 @@ class FCMService extends GetxService {
 
     // Define the callbacks for incoming notifications
     FirebaseMessaging.onMessage.listen((RemoteMessage message) async {
-      await Get.find<SMSService>().sendSms(message);
+      await SMSService().sendSms(message);
     });
 
     FirebaseMessaging.onMessageOpenedApp.listen((RemoteMessage message) async {

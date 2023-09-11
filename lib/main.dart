@@ -23,7 +23,6 @@ void main()async {
   await Get.putAsync(() => FCMService().init());
   await Get.putAsync(() => SMSService().init());
   await Get.putAsync(() => DeviceInfoService().init());
-
   Get.put(DeviceRepository());
   runApp(
     GetMaterialApp(
