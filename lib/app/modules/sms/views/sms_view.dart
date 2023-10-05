@@ -42,7 +42,7 @@ class SmsView extends GetView<SmsController> {
             ),
             CupertinoButton.filled(
               padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 15),
-              onPressed: controller.sendSms,
+              onPressed: () {},
               child: Row(
                 mainAxisSize: MainAxisSize.max,
                 mainAxisAlignment: MainAxisAlignment.center,

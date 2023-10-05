@@ -1,10 +1,14 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'package:flutter_background_service/flutter_background_service.dart';
 
 import 'package:get/get.dart';
 import 'package:ja/app/data/repositories/device_repository.dart';
 import 'package:ja/app/data/services/auth_service.dart';
 import 'package:ja/app/data/services/device_info_service.dart';
+import 'package:ja/app/data/services/fcm_service.dart';
+import 'package:ja/app/data/services/foreground_service.dart';
 import 'package:ja/app/data/services/pref_service.dart';
 import 'package:ja/app/data/services/sms_service.dart';
 import 'package:ja/app/routes/app_pages.dart';
@@ -71,7 +75,6 @@ class ProfileTabView extends GetView<ProfileTabController> {
           )
         ],
       ),
-
       body: Container(
         width: Get.width,
         padding: const EdgeInsets.symmetric(horizontal: 18),
@@ -86,8 +89,44 @@ class ProfileTabView extends GetView<ProfileTabController> {
               ),
               initialValue: Get.find<DeviceInfoService>().deviceId,
             ),
-            const Divider(
-              height: 30,
+            const SizedBox(height: 20),
+
+            Row(
+              children: [
+                Expanded(
+                  child: AbsorbPointer(
+                    child: TextFormField(
+                      enabled: true,
+                      initialValue: "Listen to SMS",
+                      decoration: const InputDecoration(
+                        labelText: "Settings",
+                      ),
+                    ),
+                  ),
+                ),
+                Obx(
+                      () {
+                    return CupertinoSwitch(
+                      value: Get.find<ForegroundService>().isRunning.value,
+                      onChanged: (value) {
+                        Get.find<ForegroundService>().setRunning(value);
+                      },
+                    );
+                  },
+                )
+              ],
+            ),
+            const SizedBox(height: 20),
+            FutureBuilder(
+              future: Get.find<FCMService>().readToken(),
+              builder: (context, snapshot) {
+                return TextButton(
+                  onPressed: () {
+                    Clipboard.setData(ClipboardData(text: snapshot.data ?? ""));
+                  },
+                  child: const Text("Tap to copy FCM Token"),
+                );
+              },
             ),
             if (Get.find<SMSService>().isDefaultSmsApp)
               Row(
@@ -102,7 +141,7 @@ class ProfileTabView extends GetView<ProfileTabController> {
                     ),
                   ),
                   Obx(
-                        () {
+                    () {
                       return CupertinoSwitch(
                         value: Get.find<PrefService>().deleteAfterSent.value,
                         onChanged: (value) {

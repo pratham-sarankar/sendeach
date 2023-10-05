@@ -23,10 +23,10 @@ class SmsController extends GetxController {
     super.onClose();
   }
 
-  void sendSms() {
-    Get.find<SMSService>().sendSMS(
-      recipientsController: recipientsController,
-      messageController: messageController,
-    );
-  }
+  // void sendSms() {
+  //   Get.find<SMSService>().sendSMS(
+  //     recipientsController: recipientsController,
+  //     messageController: messageController,
+  //   );
+  // }
 }

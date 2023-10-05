@@ -2,7 +2,6 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:ja/app/modules/home/tabs/contacts_tab/views/contacts_tab_view.dart';
 import 'package:ja/app/modules/home/tabs/home_tab/views/home_tab_view.dart';
 import 'package:ja/app/modules/home/tabs/profile_tab/views/profile_tab_view.dart';
 
@@ -23,10 +22,6 @@ class HomeView extends GetView<HomeController> {
                 label: "Home",
               ),
               BottomNavigationBarItem(
-                icon: Icon(Icons.contacts),
-                label: "Contacts",
-              ),
-              BottomNavigationBarItem(
                 icon: Icon(CupertinoIcons.person_alt_circle_fill),
                 label: "Profile",
               ),
@@ -45,7 +40,6 @@ class HomeView extends GetView<HomeController> {
             index: controller.index.value,
             children: const [
               HomeTabView(),
-              ContactsTabView(),
               ProfileTabView(),
             ],
           ),

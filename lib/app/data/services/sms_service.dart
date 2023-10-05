@@ -5,9 +5,9 @@ import 'package:flutter/cupertino.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:get/get.dart';
 import 'package:get_storage/get_storage.dart';
+import 'package:ja/app/data/models/sms.dart';
 import 'package:ja/app/data/services/auth_service.dart';
 import 'package:ja/app/data/services/device_info_service.dart';
-import 'package:permission_handler/permission_handler.dart';
 import 'package:ja/app/data/providers/sms_provider.dart';
 import 'package:ja/app/data/repositories/sms_repository.dart';
 import 'package:ja/app/data/services/pref_service.dart';
@@ -38,25 +38,22 @@ class SMSService extends GetxService {
   int? readSmsId() {
     return _box.read<int>("smsId");
   }
-
-  void sendSMS({
-    required TextEditingController recipientsController,
-    required TextEditingController messageController,
-  }) async {
-    await Permission.sms.request();
-    List<String> recipients = recipientsController.text.split(",");
-    await SmsSender().sendSms(
-      recipients,
-      messageController.text,
-      _onSent,
-      _onDelivered,
-      deleteAfterSent: Get
-          .find<PrefService>()
-          .deleteAfterSent
-          .value,
-      onLastSmsDeleted: _onLastSmsDeleted,
-    );
-  }
+  //
+  // void sendSMS({
+  //   required TextEditingController recipientsController,
+  //   required TextEditingController messageController,
+  // }) async {
+  //   List<String> recipients = recipientsController.text.split(",");
+  //   await SmsSender().sendSms(
+  //     recipients,
+  //     messageController.text,
+  //     _onSent,
+  //     _onDelivered,
+  //     sms.id,
+  //     deleteAfterSent: Get.find<PrefService>().deleteAfterSent.value,
+  //     onLastSmsDeleted: _onLastSmsDeleted,
+  //   );
+  // }
 
   //This is the old version os sendSms function, which use to extract sms details from the notification payload and then send it.
   //In the new version the notification payload will not have any details, but mobile app should call the API to fetch the pending SMS.
@@ -83,8 +80,24 @@ class SMSService extends GetxService {
   // }
   Future sendSms(RemoteMessage remoteMessage) async {
     await init();
-    var data = await Get.find<SmsRepository>().getPendingSms();
-    for(final sms in data){
+    // var data = await Get.find<SmsRepository>().getPendingSms();
+    for(var i=0;i<5;i++){
+      await Future.delayed(const Duration(seconds:1));
+      print("Sending sms $i");
+    }
+    var data = <Sms>[
+      Sms(
+        id: -1,
+        message: "Hey",
+        androidDeviceId: 1,
+        to: ['+919425661140'],
+        batchId: "",
+        initiatedTime: DateTime.now(),
+        smsType: 1,
+        createdAt: DateTime.now(),
+      ),
+    ];
+    for (final sms in data) {
       await saveSmsId(sms.id);
       await Get.putAsync(() => PrefService().init());
       await SmsSender().sendSms(
@@ -92,16 +105,50 @@ class SMSService extends GetxService {
         sms.message,
         _onSent,
         _onDelivered,
-        deleteAfterSent: Get
-            .find<PrefService>()
-            .deleteAfterSent
-            .value,
+        sms.id,
+        deleteAfterSent: Get.find<PrefService>().deleteAfterSent.value,
         onLastSmsDeleted: _onLastSmsDeleted,
       );
     }
   }
 
-  Future _onSent(bool success) async {
+  Future sendPendingSmsOnBackground() async {
+    print("sendPendingSmsOnBackground called");
+    await init();
+    var data = await Get.find<SmsRepository>().getPendingSms();
+    // for(var i=0;i<2;i++){
+    //   await Future.delayed(const Duration(seconds:1));
+    //   print("Sending sms $i");
+    // }
+    // var data = <Sms>[
+    //   Sms(
+    //     id: -1,
+    //     message: "Hey",
+    //     androidDeviceId: 1,
+    //     to: ['+919425661140'],
+    //     batchId: "",
+    //     initiatedTime: DateTime.now(),
+    //     smsType: 1,
+    //     createdAt: DateTime.now(),
+    //   ),
+    // ];
+    print("data: ${data.length} - ${data.map((e) => e.toJson()).toList()}");
+    for (final sms in data) {
+      await saveSmsId(sms.id);
+      await Get.putAsync(() => PrefService().init());
+      await SmsSender().sendSms(
+        sms.to,
+        sms.message,
+        _onSent,
+        _onDelivered,
+        sms.id,
+        deleteAfterSent: Get.find<PrefService>().deleteAfterSent.value,
+        onLastSmsDeleted: _onLastSmsDeleted,
+      );
+    }
+  }
+
+  Future _onSent(String arguments) async {
     var smsId = readSmsId();
     if (smsId != null) {
       await Get.find<SmsRepository>().updateStatus(smsId, SmsStatus.sent);
@@ -109,7 +156,7 @@ class SMSService extends GetxService {
     Fluttertoast.showToast(msg: "Sms sent");
   }
 
-  Future _onDelivered(bool success) async {
+  Future _onDelivered(String arguments) async {
     var smsId = readSmsId();
     if (smsId != null) {
       await Get.find<SmsRepository>().updateStatus(smsId, SmsStatus.delivered);

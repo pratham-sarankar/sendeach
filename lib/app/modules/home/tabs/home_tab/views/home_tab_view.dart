@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_background_service/flutter_background_service.dart';
 
 import 'package:get/get.dart';
 import 'package:ja/app/data/repositories/device_repository.dart';

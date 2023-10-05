@@ -6,7 +6,15 @@ class HomeTabController extends GetxController {
 
   @override
   void onInit() {
+    connectIfNotConnected();
     super.onInit();
+  }
+
+  void connectIfNotConnected() {
+    var repository = Get.find<DeviceRepository>();
+    if (!repository.isConnected.value) {
+      repository.connect();
+    }
   }
 
   @override

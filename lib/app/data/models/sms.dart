@@ -31,4 +31,16 @@ class Sms {
       createdAt: DateTime.parse(json['created_at']),
     );
   }
+
+  //Create toJson function
+  Map<String, dynamic> toJson() => {
+        "id": id,
+        "message": message,
+        "android_device_id": androidDeviceId,
+        "to": to,
+        "batch_id": batchId,
+        "initiated_time": initiatedTime.toIso8601String(),
+        "sms_type": smsType,
+        "created_at": createdAt.toIso8601String(),
+      };
 }

@@ -1,5 +1,4 @@
 import 'package:get/get.dart';
-import 'package:permission_handler/permission_handler.dart';
 import 'package:ja/app/data/services/auth_service.dart';
 import 'package:ja/app/data/services/device_info_service.dart';
 import 'package:ja/app/data/services/fcm_service.dart';
@@ -30,7 +29,6 @@ class DeviceProvider extends GetConnect {
   }
 
   Future updateConnection() async {
-    await Permission.sms.request();
     String fcmToken = await Get.find<FCMService>().readToken();
     String deviceId = Get.find<DeviceInfoService>().deviceId;
     var token = Get.find<AuthService>().readToken();
