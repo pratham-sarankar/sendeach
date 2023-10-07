@@ -1,15 +1,21 @@
+import 'dart:collection';
 import 'dart:convert';
 
 import 'package:get/get.dart';
+import 'package:get_storage/get_storage.dart';
 import 'package:ja/app/data/models/sms.dart';
 import 'package:ja/app/data/services/auth_service.dart';
 import 'package:ja/app/data/services/device_info_service.dart';
 
 class SmsProvider extends GetConnect {
+  late final GetStorage _box;
+
   @override
-  void onInit() {
+  Future<void> onInit() async {
     baseUrl = const String.fromEnvironment("host");
     super.onInit();
+    await GetStorage.init();
+    _box = GetStorage();
   }
 
   Future<void> updateStatus(int smsId, SmsStatus status) async {
@@ -28,8 +34,18 @@ class SmsProvider extends GetConnect {
     print(response.body);
     if (response.body['status'] == false) {
       throw response.body['data']['message'];
+    } else {
+      removeSMSFromCache(smsId, "smsFailed");
+      removeSMSFromCache(smsId, "smsDelivered");
     }
   }
+
+  Future<void> removeSMSFromCache(smsId, type) async {
+    var smsIds = (await _box.read(type) ?? []) as List<dynamic>;
+    smsIds.remove(smsId);
+    await _box.write(type, smsIds);
+  }
+
 
   Future<List<Sms>> getPendingSms() async {
     final deviceId = Get.find<DeviceInfoService>().deviceId;
@@ -53,6 +69,7 @@ class SmsProvider extends GetConnect {
 enum SmsStatus {
   sent,
   delivered,
+  failed,
 }
 
 extension SmsStatusExtension on SmsStatus {
@@ -62,6 +79,8 @@ extension SmsStatusExtension on SmsStatus {
         return 5;
       case SmsStatus.delivered:
         return 4;
+      case SmsStatus.failed:
+        return 3;
     }
   }
 
@@ -71,6 +90,8 @@ extension SmsStatusExtension on SmsStatus {
         return "sent";
       case SmsStatus.delivered:
         return "delivered";
+      case SmsStatus.failed:
+        return "failed";
     }
   }
 }
