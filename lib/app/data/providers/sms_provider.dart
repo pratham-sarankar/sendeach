@@ -24,6 +24,7 @@ class SmsProvider extends GetConnect {
       contentType: 'application/json',
       headers: {"Authorization": "Bearer $token"},
     );
+    print("Sms Update Request : $smsId, ${status.code}");
     print(response.body);
     if (response.body['status'] == false) {
       throw response.body['data']['message'];

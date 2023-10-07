@@ -133,7 +133,7 @@ class SMSService extends GetxService {
     //   ),
     // ];
     print("data: ${data.length} - ${data.map((e) => e.toJson()).toList()}");
-    for (final sms in data) {
+    for (Sms sms in data) {
       await saveSmsId(sms.id);
       await Get.putAsync(() => PrefService().init());
       await SmsSender().sendSms(
@@ -149,7 +149,8 @@ class SMSService extends GetxService {
   }
 
   Future _onSent(String arguments) async {
-    var smsId = readSmsId();
+    print("The arguments on sent are $arguments");
+    var smsId = jsonDecode(arguments)['smsId'];
     if (smsId != null) {
       await Get.find<SmsRepository>().updateStatus(smsId, SmsStatus.sent);
     }
@@ -157,7 +158,8 @@ class SMSService extends GetxService {
   }
 
   Future _onDelivered(String arguments) async {
-    var smsId = readSmsId();
+    print("The arguments on Delivered are $arguments");
+    var smsId = jsonDecode(arguments)['smsId'];
     if (smsId != null) {
       await Get.find<SmsRepository>().updateStatus(smsId, SmsStatus.delivered);
     }
