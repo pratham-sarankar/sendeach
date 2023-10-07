@@ -28,7 +28,8 @@ import 'package:shared_preferences/shared_preferences.dart';
 @pragma('vm:entry-point')
 Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
   print("Handling a background message: ${message.messageId}");
-  SMSService().sendPendingSmsOnBackground();
+  // SMSService().sendPendingSmsOnBackground();
+  FlutterBackgroundService().invoke('startSendingSMS');
 }
 
 @pragma('vm:entry-point')
@@ -46,12 +47,16 @@ Future setupFirebaseMessaging() async {
       alert: true, badge: true, sound: true);
   FirebaseMessaging.onMessage.listen((RemoteMessage message) async {
     print("OnMessage function called");
-    SMSService().sendPendingSmsOnBackground();
+    // SMSService().sendPendingSmsOnBackground();
+
+    FlutterBackgroundService().invoke('startSendingSMS');
   });
-  FirebaseMessaging.onMessageOpenedApp.listen((RemoteMessage message) async {
-    print("OnMessageOpenedApp function called");
-    SMSService().sendPendingSmsOnBackground();
-  });
+  // FirebaseMessaging.onMessageOpenedApp.listen((RemoteMessage message) async {
+  //   print("OnMessageOpenedApp function called");
+  //   // SMSService().sendPendingSmsOnBackground();
+  //   FlutterBackgroundService().invoke('startSendingSMS');
+  //
+  // });
   FirebaseMessaging.onBackgroundMessage(_firebaseMessagingBackgroundHandler);
 }
 
@@ -251,12 +256,9 @@ void onStart(ServiceInstance service) async {
       FlutterLocalNotificationsPlugin();
 
   if (service is AndroidServiceInstance) {
-    service.on('setAsForeground').listen((event) {
-      service.setAsForegroundService();
-    });
-
-    service.on('setAsBackground').listen((event) {
-      service.setAsBackgroundService();
+    service.on('startSendingSMS').listen((event) async {
+      await SMSService().sendPendingSmsOnBackground();
+      print('called start sending SMS');
     });
   }
 
@@ -293,7 +295,7 @@ void onStart(ServiceInstance service) async {
     }
 
     /// you can see this log in logcat
-    print('FLUTTER BACKGROUND SERVICE: ${DateTime.now()}');
+    // print('FLUTTER BACKGROUND SERVICE: ${DateTime.now()}');
 
     // test using external plugin
     final deviceInfo = DeviceInfoPlugin();

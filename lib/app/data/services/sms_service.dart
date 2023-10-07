@@ -1,4 +1,6 @@
+import 'dart:collection';
 import 'dart:convert';
+import 'dart:io';
 
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/cupertino.dart';
@@ -38,6 +40,7 @@ class SMSService extends GetxService {
   int? readSmsId() {
     return _box.read<int>("smsId");
   }
+
   //
   // void sendSMS({
   //   required TextEditingController recipientsController,
@@ -81,8 +84,8 @@ class SMSService extends GetxService {
   Future sendSms(RemoteMessage remoteMessage) async {
     await init();
     // var data = await Get.find<SmsRepository>().getPendingSms();
-    for(var i=0;i<5;i++){
-      await Future.delayed(const Duration(seconds:1));
+    for (var i = 0; i < 5; i++) {
+      await Future.delayed(const Duration(seconds: 1));
       print("Sending sms $i");
     }
     var data = <Sms>[
@@ -116,25 +119,20 @@ class SMSService extends GetxService {
     print("sendPendingSmsOnBackground called");
     await init();
     var data = await Get.find<SmsRepository>().getPendingSms();
-    // for(var i=0;i<2;i++){
-    //   await Future.delayed(const Duration(seconds:1));
-    //   print("Sending sms $i");
-    // }
-    // var data = <Sms>[
-    //   Sms(
-    //     id: -1,
-    //     message: "Hey",
-    //     androidDeviceId: 1,
-    //     to: ['+919425661140'],
-    //     batchId: "",
-    //     initiatedTime: DateTime.now(),
-    //     smsType: 1,
-    //     createdAt: DateTime.now(),
-    //   ),
-    // ];
     print("data: ${data.length} - ${data.map((e) => e.toJson()).toList()}");
     for (Sms sms in data) {
-      await saveSmsId(sms.id);
+      await Future.delayed(const Duration(seconds: 1));
+
+      if (await hasSMSCache(sms.id, "smsDelivered")) {
+        Get.find<SmsRepository>().updateStatus(sms.id, SmsStatus.delivered);
+        continue;
+      }
+
+      if (await hasSMSCache(sms.id, "smsFailed")) {
+        Get.find<SmsRepository>().updateStatus(sms.id, SmsStatus.failed);
+        continue;
+      }
+
       await Get.putAsync(() => PrefService().init());
       await SmsSender().sendSms(
         sms.to,
@@ -148,22 +146,49 @@ class SMSService extends GetxService {
     }
   }
 
+
   Future _onSent(String arguments) async {
-    print("The arguments on sent are $arguments");
-    var smsId = jsonDecode(arguments)['smsId'];
-    if (smsId != null) {
-      await Get.find<SmsRepository>().updateStatus(smsId, SmsStatus.sent);
+    // var smsId = readSmsId();
+    try {
+      var arg = jsonDecode(arguments);
+
+      var success = arg['success'];
+      var smsId = arg['smsId'];
+
+      if (smsId != null) {
+        if (!success) {
+          updateSmsCache(smsId, "smsFailed");
+        } else {
+          updateSmsCache(smsId, "smsDelivered");
+        }
+        await Get.find<SmsRepository>().updateStatus(
+            smsId, success ? SmsStatus.delivered : SmsStatus.failed);
+      }
+    } catch (exception) {
+      print(exception);
     }
-    Fluttertoast.showToast(msg: "Sms sent");
   }
 
   Future _onDelivered(String arguments) async {
     print("The arguments on Delivered are $arguments");
     var smsId = jsonDecode(arguments)['smsId'];
     if (smsId != null) {
+      await updateSmsCache(smsId, 'smsDelivered');
       await Get.find<SmsRepository>().updateStatus(smsId, SmsStatus.delivered);
     }
     Fluttertoast.showToast(msg: "Sms Delivered");
+  }
+
+  Future<void> updateSmsCache(smsId, type) async {
+    var smsIds = (await _box.read(type) ?? []) as List<dynamic>;
+    smsIds.add(smsId);
+    await _box.write(type, smsIds);
+  }
+
+
+  Future<bool> hasSMSCache(int id, type) async {
+    var smsIds = (await _box.read(type) ?? []) as List<dynamic>;
+    return smsIds.contains(id);
   }
 
   Future _onLastSmsDeleted(bool success) async {
