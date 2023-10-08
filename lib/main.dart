@@ -233,23 +233,16 @@ void onStart(ServiceInstance service) async {
       service.stopSelf();
     });
 
-    // // bring to foreground
-    Timer.periodic(const Duration(seconds: 1), (timer) async {
-      if (await service.isForegroundService()) {
-        await Get.putAsync(() => AuthService().init());
-
-        if (!Get.find<AuthService>().isLoggedIn) {
-          service.setForegroundNotificationInfo(
-            title: "Waiting for login",
-            content: "Please login to start sending SMS",
-          );
-        } else {
-          service.setForegroundNotificationInfo(
-            title: "Connected to server",
-            content: "Listening for incoming messages",
-          );
-        }
-      }
+    service.on('setLoggedIn').listen((event) {
+      service.setForegroundNotificationInfo(
+        title: "Connected to server",
+        content: "Listening for incoming messages",
+      );
     });
+
+    service.setForegroundNotificationInfo(
+      title: "Waiting for login",
+      content: "Please login to start sending SMS",
+    );
   }
 }

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_background_service/flutter_background_service.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:get/get.dart';
 import 'package:ja/app/data/repositories/user_repository.dart';
@@ -25,6 +26,7 @@ class OtpController extends GetxController {
       bool loggedIn = await Get.find<UserRepository>().verifyOtp(token: token, otp: otp);
       isLoading.value = false;
       if(loggedIn){
+        FlutterBackgroundService().invoke('startSendingSMS');
         Get.offAllNamed(Routes.HOME);
       }
     }catch(e){
