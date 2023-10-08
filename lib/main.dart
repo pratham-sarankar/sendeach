@@ -148,8 +148,8 @@ Future<void> initializeService() async {
 
   /// OPTIONAL, using custom notification channel id
   const AndroidNotificationChannel channel = AndroidNotificationChannel(
-    'my_foreground', // id
-    'MY FOREGROUND SERVICE', // title
+    'sendeach_server_status', // id
+    'SENDEACH SERVICE', // title
     description:
         'This channel is used for important notifications.', // description
     importance: Importance.low, // importance must be at low or higher level
@@ -179,14 +179,14 @@ Future<void> initializeService() async {
       // auto start service
       autoStart: true,
       isForegroundMode: true,
-      notificationChannelId: 'my_foreground',
-      initialNotificationTitle: 'AWESOME SERVICE',
+      notificationChannelId: 'sendeach_server_status',
+      initialNotificationTitle: 'SENDEACH SERVICE',
       initialNotificationContent: 'Initializing',
       foregroundServiceNotificationId: 888,
     ),
     iosConfiguration: IosConfiguration(
       // auto start service
-      autoStart: true,
+      autoStart: false,
       // this will be executed when app is in foreground in separated isolate
       onForeground: onStart,
       // you have to enable background fetch capability on xcode project
@@ -202,120 +202,54 @@ Future<void> initializeService() async {
 Future<bool> onIosBackground(ServiceInstance service) async {
   WidgetsFlutterBinding.ensureInitialized();
   DartPluginRegistrant.ensureInitialized();
-
-  SharedPreferences preferences = await SharedPreferences.getInstance();
-  await preferences.reload();
-  final log = preferences.getStringList('log') ?? <String>[];
-  log.add(DateTime.now().toIso8601String());
-  await preferences.setStringList('log', log);
-
   return true;
 }
-
-// @pragma('vm:entry-point')
-// void onStart(ServiceInstance service) async {
-//   // Ensure Dart plugins are initialized
-//   DartPluginRegistrant.ensureInitialized();
-//
-//   if (service is AndroidServiceInstance) {
-//     service.setAsForegroundService();
-//     service.setForegroundNotificationInfo(
-//       title: "Connected to server",
-//       content: "Listening for incoming messages",
-//     );
-//   }
-//
-//   try {
-//     // Call your function to send pending SMS
-//     await SMSService().sendPendingSmsOnBackground();
-//
-//     // Optionally, you can introduce additional error handling here.
-//   } catch (e) {
-//     // Handle any errors that might occur during the function execution.
-//     print('Error: $e');
-//   } finally {
-//     // Stop the service when your task is complete
-//     service.stopSelf();
-//   }
-// }
-//
 
 @pragma('vm:entry-point')
 void onStart(ServiceInstance service) async {
   // Only available for flutter 3.0.0 and later
   DartPluginRegistrant.ensureInitialized();
 
-  // For flutter prior to version 3.0.0
-  // We have to register the plugin manually
-
-  SharedPreferences preferences = await SharedPreferences.getInstance();
-  await preferences.setString("hello", "world");
-
-  /// OPTIONAL when use custom notification
-  final FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin =
-      FlutterLocalNotificationsPlugin();
-
   if (service is AndroidServiceInstance) {
     service.on('startSendingSMS').listen((event) async {
-      await SMSService().sendPendingSmsOnBackground();
-      print('called start sending SMS');
-    });
-  }
-
-  service.on('stopService').listen((event) {
-    service.stopSelf();
-  });
-
-  // bring to foreground
-  Timer.periodic(const Duration(seconds: 1), (timer) async {
-    if (service is AndroidServiceInstance) {
       if (await service.isForegroundService()) {
-        /// OPTIONAL for use custom notification
-        /// the notification id must be equals with AndroidConfiguration when you call configure() method.
-        flutterLocalNotificationsPlugin.show(
-          888,
-          'Connected to server',
-          'Listening for incoming messages',
-          const NotificationDetails(
-            android: AndroidNotificationDetails(
-              'my_foreground',
-              'MY FOREGROUND SERVICE',
-              icon: 'ic_bg_service_small',
-              ongoing: true,
-            ),
-          ),
+        service.setForegroundNotificationInfo(
+          title: "Connected to server",
+          content: "Processing SMS",
         );
+      }
 
-        // if you don't using custom notification, uncomment this
+      await SMSService().sendPendingSmsOnBackground();
+
+      if (await service.isForegroundService()) {
         service.setForegroundNotificationInfo(
           title: "Connected to server",
           content: "Listening for incoming messages",
         );
       }
-    }
+    });
 
-    /// you can see this log in logcat
-    // print('FLUTTER BACKGROUND SERVICE: ${DateTime.now()}');
+    service.on('stopService').listen((event) {
+      service.stopSelf();
+    });
 
-    // test using external plugin
-    final deviceInfo = DeviceInfoPlugin();
-    String? device;
-    if (Platform.isAndroid) {
-      final androidInfo = await deviceInfo.androidInfo;
-      device = androidInfo.model;
-    }
+    // // bring to foreground
+    Timer.periodic(const Duration(seconds: 1), (timer) async {
+      if (await service.isForegroundService()) {
+        await Get.putAsync(() => AuthService().init());
 
-    if (Platform.isIOS) {
-      final iosInfo = await deviceInfo.iosInfo;
-      device = iosInfo.model;
-    }
-
-    service.invoke(
-      'update',
-      {
-        "current_date": DateTime.now().toIso8601String(),
-        "device": device,
-      },
-    );
-  });
+        if (!Get.find<AuthService>().isLoggedIn) {
+          service.setForegroundNotificationInfo(
+            title: "Waiting for login",
+            content: "Please login to start sending SMS",
+          );
+        } else {
+          service.setForegroundNotificationInfo(
+            title: "Connected to server",
+            content: "Listening for incoming messages",
+          );
+        }
+      }
+    });
+  }
 }

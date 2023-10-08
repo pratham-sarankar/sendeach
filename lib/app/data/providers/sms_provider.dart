@@ -30,8 +30,7 @@ class SmsProvider extends GetConnect {
       contentType: 'application/json',
       headers: {"Authorization": "Bearer $token"},
     );
-    print("Sms Update Request : $smsId, ${status.code}");
-    print(response.body);
+
     if (response.body['status'] == false) {
       throw response.body['data']['message'];
     } else {
@@ -50,16 +49,14 @@ class SmsProvider extends GetConnect {
   Future<List<Sms>> getPendingSms() async {
     final deviceId = Get.find<DeviceInfoService>().deviceId;
     final authToken = Get.find<AuthService>().readToken();
-    print("device_id=$deviceId&limit=100");
-    print("authToken=$authToken");
-    String url = "/sms/pull-pending/app?device_id=$deviceId&limit=100";
+
+    String url = "/sms/pull-pending/app?device_id=$deviceId&limit=30";
     Response response = await get(
       url,
       contentType: 'application/json',
       headers: {"Authorization": "Bearer $authToken"},
     );
-    print(response.body);
-    print(response.statusCode);
+
     final messages = List.from(response.body['messages']);
     List<Sms> sms = messages.map((e) => Sms.fromJson(e)).toList();
     return sms;
